@@ -13,6 +13,9 @@ const React = require('react');
 const ReactDOM = require('react-dom/server');
 const Router = require('react-router');
 const routes = require('./app/routes');
+const mongoose = require('mongoose');
+const Character = require('./models/character');
+const config = require('./config');
 let onlineUsers = 0;
 
 const app =express();
@@ -24,6 +27,11 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+mongoose.connect(config.database);
+mongoose.connection.on('error',() => {
+  console.info('Error: Could not connect to MongoDB. Did you forget to run `mongod`?');
+});
 
 app.use((req, res) => {
   Router.match({ routes: routes.default, location: req.url }, (err, redirectLocation, renderProps) => {
