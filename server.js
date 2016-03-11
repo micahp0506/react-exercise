@@ -13,8 +13,11 @@ const React = require('react');
 const ReactDOM = require('react-dom/server');
 const Router = require('react-router');
 const routes = require('./app/routes');
+let onlineUsers = 0;
 
 const app =express();
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
 
 const PORT = process.env.PORT || 3000;
 app.use(logger('dev'));
@@ -35,6 +38,17 @@ app.use((req, res) => {
     } else {
       res.status(404).send('Page Not Found')
     }
+  });
+});
+
+io.sockets.on('connection',(socket) => {
+  onlineUsers++;
+
+  io.sockets.emit('onlineUsers', { onlineUsers: onlineUsers });
+
+  socket.on('disconnect',() => {
+    onlineUsers--;
+    io.sockets.emit('onlineUsers', { onlineUsers: onlineUsers });
   });
 });
 
